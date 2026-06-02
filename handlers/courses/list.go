@@ -1,10 +1,10 @@
 package courses
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"mobile-server/database"
 )
@@ -16,20 +16,27 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extrair user_id da query string
-	userIDStr := r.URL.Query().Get("user_id")
-	if userIDStr == "" {
-		http.Error(w, "Parâmetro user_id é obrigatório", http.StatusBadRequest)
+	// Extrair username da query string
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		http.Error(w, "Parâmetro username é obrigatório", http.StatusBadRequest)
 		return
 	}
 
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	// Buscar usuário pelo username
+	user, err := database.GetUserByUsername(username)
 	if err != nil {
-		http.Error(w, "user_id inválido", http.StatusBadRequest)
+		if err == sql.ErrNoRows {
+			http.Error(w, "Usuário não encontrado", http.StatusNotFound)
+			return
+		}
+		fmt.Printf("Erro ao buscar usuário: %v\n", err)
+		http.Error(w, "Erro ao buscar usuário", http.StatusInternalServerError)
 		return
 	}
 
-	courses, err := database.GetAllCoursesWithEnrollment(userID)
+	// Buscar cursos com informação de inscrição do usuário
+	courses, err := database.GetAllCoursesWithEnrollment(user.ID)
 	if err != nil {
 		fmt.Printf("Erro ao buscar cursos: %v\n", err)
 		http.Error(w, "Erro ao buscar cursos", http.StatusInternalServerError)
