@@ -9,8 +9,9 @@ type Enrollment struct {
 
 // EnrollmentRequest representa uma requisição de inscrição em um curso.
 type EnrollmentRequest struct {
-	UserID   int64 `json:"user_id"`
-	CourseID int64 `json:"course_id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	CourseID int64  `json:"course_id"`
 }
 
 // EnrollmentResponse representa a resposta de uma inscrição.

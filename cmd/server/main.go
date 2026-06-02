@@ -20,10 +20,10 @@ func main() {
 	}
 	defer database.Close()
 
-	http.HandleFunc("/", healthHandler)
-	http.HandleFunc("/login", handlers.LoginHandler)
-	http.HandleFunc("/cursos", courses.Router)
-	http.HandleFunc("/cursos/inscrever", courses.EnrollHandler)
+	http.HandleFunc("/", handlers.LocalNetworkOnly(healthHandler))
+	http.HandleFunc("/login", handlers.LocalNetworkOnly(handlers.LoginHandler))
+	http.HandleFunc("/cursos", handlers.LocalNetworkOnly(courses.Router))
+	http.HandleFunc("/cursos/inscrever", handlers.LocalNetworkOnly(courses.EnrollHandler))
 
 	fmt.Println("Servidor iniciado na porta 4000")
 	log.Fatal(http.ListenAndServe(":4000", nil))

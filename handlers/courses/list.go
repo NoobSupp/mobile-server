@@ -1,41 +1,28 @@
 package courses
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"mobile-server/database"
+	"mobile-server/handlers"
 )
 
-// ListHandler retorna todos os cursos com informação de inscrição do usuário.
+// ListHandler retorna todos os cursos com informacao de inscricao do usuario.
 func ListHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+		http.Error(w, "Metodo nao permitido", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Extrair username da query string
 	username := r.URL.Query().Get("username")
-	if username == "" {
-		http.Error(w, "Parâmetro username é obrigatório", http.StatusBadRequest)
+	password := r.URL.Query().Get("password")
+	user, ok := handlers.RequireAuthenticatedUser(w, username, password, writeListError)
+	if !ok {
 		return
 	}
 
-	// Buscar usuário pelo username
-	user, err := database.GetUserByUsername(username)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Usuário não encontrado", http.StatusNotFound)
-			return
-		}
-		fmt.Printf("Erro ao buscar usuário: %v\n", err)
-		http.Error(w, "Erro ao buscar usuário", http.StatusInternalServerError)
-		return
-	}
-
-	// Buscar cursos com informação de inscrição do usuário
 	courses, err := database.GetAllCoursesWithEnrollment(user.ID)
 	if err != nil {
 		fmt.Printf("Erro ao buscar cursos: %v\n", err)
@@ -45,4 +32,8 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(courses)
+}
+
+func writeListError(w http.ResponseWriter, status int, message string) {
+	http.Error(w, message, status)
 }

@@ -112,6 +112,10 @@ CREATE TABLE IF NOT EXISTS enrollments (
 func ensureAdminAccount() error {
 	const adminUsername = "admin"
 	if _, err := GetUserByUsername(adminUsername); err == nil {
+		_, err = DB.Exec(`UPDATE users SET is_admin = 1 WHERE username = ?`, adminUsername)
+		if err != nil {
+			return fmt.Errorf("falha ao atualizar usuário admin: %w", err)
+		}
 		return nil
 	} else if err != sql.ErrNoRows {
 		return err
@@ -122,7 +126,7 @@ func ensureAdminAccount() error {
 		return fmt.Errorf("falha ao gerar hash da senha padrão: %w", err)
 	}
 
-	_, err = DB.Exec(`INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)`, adminUsername, string(hashedPassword))
+	_, err = DB.Exec(`INSERT OR IGNORE INTO users (username, password, is_admin) VALUES (?, ?, 1)`, adminUsername, string(hashedPassword))
 	if err != nil {
 		return fmt.Errorf("falha ao inserir usuário admin: %w", err)
 	}

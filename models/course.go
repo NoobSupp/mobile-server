@@ -20,6 +20,8 @@ type CourseDate struct {
 
 // CreateCourseRequest representa uma requisição de criação de curso.
 type CreateCourseRequest struct {
+	Username    string `json:"username"`
+	Password    string `json:"password"`
 	Name        string `json:"name"`
 	DayOfWeek   string `json:"day_of_week"`
 	Time        string `json:"time"`
